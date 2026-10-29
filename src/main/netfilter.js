@@ -64,14 +64,6 @@ class NetFilter {
       }
       callback({});
     });
-
-    ses.webRequest.onHeadersReceived({ urls: ['https://*.yapper.website/*', 'https://yapper.website/*'] }, (details, callback) => {
-      const headers = details.responseHeaders || {};
-      for (const k of Object.keys(headers)) {
-        if (/^content-security-policy(-report-only)?$/i.test(k)) delete headers[k];
-      }
-      callback({ responseHeaders: headers });
-    });
   }
 
   stats() {
