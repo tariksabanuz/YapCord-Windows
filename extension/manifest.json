@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YapCord",
-  "version": "1.19.1",
+  "version": "1.33.6",
   "minimum_chrome_version": "111",
   "description": "Vencord-style plugins, themes and Custom CSS for Yapper (yapper.website / yapin.gg), no desktop app needed.",
   "icons": {
