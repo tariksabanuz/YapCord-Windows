@@ -116,12 +116,3 @@ with the new version.
 | `Invalid version: "1.34"` from electron-builder | `package.json`'s `"version"` field needs a full three-part version like `"1.34.0"`, not `"1.34"`. |
 | Build script refuses to run because of `(` or `)` in the folder path | Move/rename the folder so its path has no parentheses (ideally no spaces either), then retry. |
 | `node tools\yapper-patch.js install` can't find Yapper | Pass `--dir "<your Yapper install folder>"` explicitly. |
-
-## Testing your build (optional, for anyone changing the source)
-
-```powershell
-npm test
-```
-
-Runs the full automated test suite (syntax, unit tests, Electron smoke tests,
-installer/patch smoke tests) before you ship a change.
