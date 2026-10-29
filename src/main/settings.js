@@ -8,7 +8,7 @@ const DEFAULTS = {
 
   plugins: {},
 
-  updater: { auto: true, notify: true, repo: '' },
+  updater: { auto: false, notify: true, repo: '' },
 
   layout: { order: ['rail', 'sidebar', 'main'], railIcon: 48, sidebarWidth: 260, zoom: 100, chatText: 100, messageGap: 100 },
   useQuickCss: true,
@@ -22,8 +22,6 @@ const DEFAULTS = {
     spellcheck: true,
     devTools: true,
     ownFilePicker: true,
-    closeYapperApp: true,
-    yapperAppNames: ['Yapper.exe'],
     bounds: null,
 
     skipProxyDetection: true,
