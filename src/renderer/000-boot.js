@@ -1,6 +1,6 @@
 
 
-YM.version = '1.33.5';
+YM.version = '1.34';
 
 YM.official = !!(YM.initial && YM.initial.app && YM.initial.app.mode === 'official');
 
