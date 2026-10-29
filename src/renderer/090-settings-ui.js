@@ -190,12 +190,6 @@ function pageMain(root) {
       toggleRow('Hardware acceleration', 'Turn off if you see graphical glitches. Needs a restart.', w('hardwareAcceleration', true), set('hardwareAcceleration')),
       toggleRow('Allow developer tools', 'Ctrl+Shift+I opens DevTools.', w('devTools', true), set('devTools')),
       toggleRow("Use YapCord's file dialog", "Makes the + button next to the message box (and other upload buttons) open Windows' own file dialog. Turn off to use the browser's file chooser.", w('ownFilePicker', true), set('ownFilePicker')),
-      toggleRow('Close the Yapper app', 'While YapCord is open the official Yapper desktop app is closed, and closed again if you start it. Yapper in a browser tab is not touched.', w('closeYapperApp', true), set('closeYapperApp')),
-      h('div', { class: 'ym-opt' },
-        h('div', { class: 'toggle-label' }, 'Program name of the Yapper app'),
-        h('div', { class: 'hint' }, 'Comma separated. Only file names that end in .exe and contain "yapper" are accepted. Default: Yapper.exe'),
-        h('input', { class: 'ym-input', type: 'text', value: (w('yapperAppNames', ['Yapper.exe']) || []).join(', '), spellcheck: 'false',
-          onChange: (e) => { const names = e.target.value.split(',').map((x) => x.trim()).filter(Boolean); set('yapperAppNames')(names.length ? names : ['Yapper.exe']); } })),
       h('div', { class: 'ym-toolbar', style: { marginTop: '6px' } },
         btn('DevTools', () => YM.native.app.devtools(), 'ym-btn-ghost ym-btn-small'),
         btn('Quit', () => YM.native.app.quit(), 'ym-btn-danger ym-btn-small')));
@@ -548,18 +542,28 @@ function pageUpdater(root) {
       h('div', { class: 'toggle-label' }, 'Update repository'),
       h('div', { class: 'hint' }, 'A public GitHub repository, as owner/repo. YapCord looks at its latest release (or, without one, package.json on the default branch) for a newer version. Left blank, it defaults to the right repo for this platform on its own (YapCord-Windows, YapCord-Linux or YapCord-MacOS).'),
       repoInput),
-    toggleRow('Automatically check for and install updates', 'Runs in the background every few hours. In the official Yapper app a found update is also downloaded and installed automatically, ready for the next start; as a stand-alone app it only checks and shows where to get it.', YM.settings.get('updater.auto', true), (v) => YM.settings.set('updater.auto', v)),
+    toggleRow('Automatically check for updates', 'Checks in the background every few hours and, if something newer is out, lets you know - it never downloads or installs anything by itself. Off by default; use "Check for updates" above any time instead, then "Update now" to actually install a found update.', YM.settings.get('updater.auto', false), (v) => YM.settings.set('updater.auto', v)),
     toggleRow('Notify me when an update is ready', 'Shows a toast once a downloaded update is ready to use.', YM.settings.get('updater.notify', true), (v) => YM.settings.set('updater.notify', v)));
 }
 
 Ui.announceUpdates = (U) => {
-  let told = null;
+  let toldAvailable = null;
+  let toldReady = null;
   return U.onState((s) => {
-    if (!s || s.phase !== 'ready' || !s.latest || told === s.latest) return;
+    if (!s || !s.latest) return;
     if (YM.settings.get('updater.notify', true) === false) return;
-    told = s.latest;
-    const t = YM.toast('YapCord ' + s.latest + ' is ready. It starts the next time you open Yapper.', { type: 'success', duration: 15000 });
-    if (s.canInstall) t.append(h('button', { class: 'ym-toast-btn', type: 'button', onClick: () => YM.native.app.relaunch() }, 'Restart now'));
+    if (s.phase === 'ready' && toldReady !== s.latest) {
+      toldReady = s.latest;
+      const t = YM.toast('YapCord ' + s.latest + ' is ready. It starts the next time you open Yapper.', { type: 'success', duration: 15000 });
+      if (s.canInstall) t.append(h('button', { class: 'ym-toast-btn', type: 'button', onClick: () => YM.native.app.relaunch() }, 'Restart now'));
+    } else if (s.phase === 'available' && toldAvailable !== s.latest) {
+      // Notify-only: a background check that finds something newer tells you about it here and stops -
+      // it never downloads or runs anything until you click one of these buttons yourself.
+      toldAvailable = s.latest;
+      const t = YM.toast('YapCord ' + s.latest + ' is available (you have ' + s.current + ').', { type: 'info', duration: 15000 });
+      if (s.canInstall) t.append(h('button', { class: 'ym-toast-btn', type: 'button', onClick: () => U.install() }, 'Update now'));
+      else if (s.url) t.append(h('button', { class: 'ym-toast-btn', type: 'button', onClick: () => YM.native.openExternal(s.url) }, 'Open release page'));
+    }
   });
 };
 YM.Events.on('boot:ready', () => { if (YM.native && YM.native.updater) Ui.announceUpdates(YM.native.updater); });
