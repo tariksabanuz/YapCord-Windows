@@ -4,7 +4,11 @@ const { SITE_HOSTS } = require('./constants');
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const TIMEOUT_MS = 10000;
-const HOST_SUFFIXES = ['.r2.dev', '.supabase.co'];
+// Any subdomain of yapper.website (api., files., and whatever else Yapper's own CDN uses now or later -
+// files.yapper.website is where avatars actually live, confirmed from a real "blocked url" failure on
+// PetPet's avatar fetch) is first-party and trusted, same as the bare domain. .r2.dev/.supabase.co are
+// third-party CDNs Yapper itself serves some assets from.
+const HOST_SUFFIXES = ['.yapper.website', '.r2.dev', '.supabase.co'];
 
 function allowedUrl(raw) {
   let u;
@@ -15,7 +19,7 @@ function allowedUrl(raw) {
   }
   if (u.protocol !== 'https:' || u.username || u.password || (u.port && u.port !== '443')) return null;
   const host = u.hostname.toLowerCase();
-  const ok = SITE_HOSTS.includes(host) || host === 'api.yapper.website' || HOST_SUFFIXES.some((s) => host.endsWith(s) && host.length > s.length);
+  const ok = SITE_HOSTS.includes(host) || HOST_SUFFIXES.some((s) => host.endsWith(s) && host.length > s.length);
   return ok ? u : null;
 }
 
