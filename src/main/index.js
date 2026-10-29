@@ -11,7 +11,6 @@ const { registerIpc } = require('./ipc');
 const { installDisplayMediaHandler } = require('./capture');
 const { attachContextMenu } = require('./contextmenu');
 const { resolveDataDir } = require('./datadir');
-const { makeRivalGuard } = require('./rival');
 const { AppIcon } = require('./appicon');
 const { Updater, defaultRepoForPlatform } = require('./updater');
 
@@ -29,7 +28,6 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 function main() {
-  let rival = null;
   const settings = new SettingsStore(path.join(dataDir, 'settings'));
   settings.load();
 
@@ -293,7 +291,6 @@ function main() {
   app.on('second-instance', showWindow);
   app.on('before-quit', () => {
     quitting = true;
-    if (rival) rival.stop();
     settings.flush();
   });
   app.on('window-all-closed', () => {
@@ -318,17 +315,6 @@ function main() {
     buildMenu();
     createWindow();
     createTray();
-
-    rival = makeRivalGuard({
-      execFile: require('child_process').execFile,
-      ownNames: ['YapCord.exe'],
-      log,
-      getConfig: () => {
-        const w = settings.get().window || {};
-        return { enabled: w.closeYapperApp !== false, names: w.yapperAppNames };
-      },
-    });
-    rival.start();
 
     updater.on('state', (st) => send('ym:updater-state', st));
     updater.start(() => settings.get().updater);
