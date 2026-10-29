@@ -213,13 +213,16 @@ class Updater extends EventEmitter {
   }
 
   start(getConfig) {
+    // Background runs only ever check and report; they never call install() on their own. Downloading and
+    // running new code is only ever triggered by an explicit user click (the "Update now" button), so a
+    // compromised update repo can at most get a user a false "update available" notice, never silently
+    // execute anything.
     const run = async () => {
       try {
         if (this.state.lastCheck && this.now() - this.state.lastCheck < MIN_GAP_MS) return;
         const cfg = getConfig() || {};
         if (cfg.auto === false) return;
         await this.check();
-        if (this.state.phase === 'available' && this.state.canInstall) await this.install();
       } catch (err) {
         this.log.warn('background update failed:', err && err.message);
       }
